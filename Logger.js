@@ -5,13 +5,15 @@ class Logger {
   constructor(Config, basePath, logger) {
     if (!basePath) throw Error('Specify basePath, please.');
 
+    this._config = Config;
+
     this.basePath = basePath;
     this.logger = logger || require('log4js');
 
     this.logger.loadAppender('console');
     this.logger.loadAppender('file');
 
-    this.configure(Config.get('app.logToConsole'));
+    this.configure(this._config.get('app.logToConsole'));
 
     this.addAppender('info', 'logs/');
     this.addAppender('error', 'logs/');
@@ -45,6 +47,11 @@ class Logger {
    * @param {String} path     Log file path
    */
   addAppender(appender, path) {
+    // In case we don't wanna write to the filesystem
+    if (!this._config.get('app.writeToFilesystem')) {
+      return false;
+    }
+
     path = path || '';
     var logPath = this.basePath + '/storage/' + path + appender + '.log';
 
